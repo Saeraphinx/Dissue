@@ -1,5 +1,5 @@
 import { Octokit } from "octokit";
-import { ActionRowBuilder, Client, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ApplicationIntegrationType, Client, Events, InteractionContextType, ModalBuilder, Routes, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import * as fs from "fs";
 
 if (!fs.existsSync("./config.json")) {
@@ -27,13 +27,21 @@ const client = new Client({
     intents: [],
 });
 
-client.on("ready", async () => {
+client.on(Events.ClientReady, async (uc) => {
     console.log("Ready!");
 
-    await client.application?.commands.create({
-        name: `createissue`,
-        description: `Create an issue in the ${Config["GITHUB-REPO"]} repository`,
-    });
+    let command = new SlashCommandBuilder()
+    command.setName("createissue");
+    command.setIntegrationTypes(ApplicationIntegrationType.UserInstall);
+    command.setDescription(`Create an issue in the ${Config["GITHUB-REPO"]} repository`);
+    command.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel);
+
+    if (uc.application.id) {
+        console.log(`Registering commands to ${uc.application.id}...`);
+        await uc.rest.put(Routes.applicationCommands(uc.application?.id), {
+            body: [command.toJSON()],
+        });
+    }
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -70,14 +78,17 @@ client.on("interactionCreate", async (interaction) => {
                 auth: Config["GITHUB-PAT"],
             });
 
-            await octokit.rest.issues.create({
+            let issue = await octokit.rest.issues.create({
                 owner: Config["GITHUB-OWNER"],
                 repo: Config["GITHUB-REPO"],
                 title: issueTitle,
                 body: issueDescription,
             });
 
-            await interaction.reply({ content: "Issue created!", ephemeral: true });
+            if (issue.status !== 201) {
+                return await interaction.reply({ content: `Failed to create issue\n\nStatus: ${issue.status}`});
+            }
+            await interaction.reply({ content: `Issue #[${issue.data.number}](${issue.data.html_url}) created in [${Config["GITHUB-OWNER"]}/${Config["GITHUB-REPO"]}](<https://github.com/${Config["GITHUB-OWNER"]}/${Config["GITHUB-REPO"]}>).` });
         }
     }
 });
