@@ -4,9 +4,9 @@
     "start": "npx tsx src/index.ts"
   },
   "dependencies": {
-    "discord.js": "^14.17.3",
+    "discord.js": "^14.18.0",
     "octokit": "^4.1.1",
-    "tsx": "^4.19.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.7.3"
   }
 }
