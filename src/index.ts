@@ -1,5 +1,5 @@
 import { Octokit } from "octokit";
-import { ActionRowBuilder, ApplicationCommandOptionType, ApplicationIntegrationType, Client, Events, InteractionContextType, ModalBuilder, Routes, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ApplicationIntegrationType, Client, Events, InteractionContextType, MessageFlags, ModalBuilder, Routes, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import * as fs from "fs";
 
 // #region Config
@@ -109,7 +109,7 @@ client.on("interactionCreate", async (interaction) => {
                 state: "open",
             });
             if (existingIssues.data.some(issue => issue.title === issueTitle)) {
-                return await interaction.reply({ content: `An issue with the same title already exists in [${data.repo}](<https://github.com/${data.repo}>).`, ephemeral: true });
+                return await interaction.reply({ content: `An issue with the same title already exists in [${data.repo}](<https://github.com/${data.repo}>).`, flags: [MessageFlags.Ephemeral] });
             }
 
             let issue = await octokit.rest.issues.create({
@@ -122,7 +122,7 @@ client.on("interactionCreate", async (interaction) => {
             if (issue.status !== 201) {
                 return await interaction.reply({ content: `Failed to create issue\n\nStatus: ${issue.status}`});
             }
-            await interaction.reply({ content: `Issue #[${issue.data.number}](${issue.data.html_url}) created in [${data.repo}](<https://github.com/${data.repo}>).`, ephemeral: data.shouldNotify === "false" ? true : false});
+            await interaction.reply({ content: `Issue #[${issue.data.number}](${issue.data.html_url}) created in [${data.repo}](<https://github.com/${data.repo}>).`, flags: data.shouldNotify === "false" ? [MessageFlags.Ephemeral] : []});
         }
     }
 });
