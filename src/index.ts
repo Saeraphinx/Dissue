@@ -75,8 +75,8 @@ client.on("interactionCreate", async (interaction) => {
                 shouldNotify: shouldNotify ? shouldNotify : "false"
             }
             modal.setCustomId(JSON.stringify(data,null,0));
-            modal.setTitle("Create Issue");
-
+            modal.setTitle("Create Issue - " + repo);
+        
             let issueTitle = new TextInputBuilder()
             issueTitle.setCustomId("issuetitle");
             issueTitle.setLabel("Issue Title");
