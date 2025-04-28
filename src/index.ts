@@ -92,9 +92,9 @@ client.on("interactionCreate", async (interaction) => {
 
             await interaction.showModal(modal);
         }
-    } else {
-        if (interaction.customId === "createissuemodal") {
-            let data = JSON.parse(interaction.customId) as { repo: string, shouldNotify: string };
+    } else if (interaction.isModalSubmit()) {
+        let data = JSON.parse(interaction.customId);
+        if (data.repo && data.shouldNotify) {
             const issueTitle = interaction.fields.getTextInputValue("issuetitle");
             const issueDescription = interaction.fields.getTextInputValue("issuedescription");
 
